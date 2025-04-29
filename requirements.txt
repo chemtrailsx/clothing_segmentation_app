@@ -4,3 +4,5 @@ transformers
 Pillow
 matplotlib
 requests
+openai
+python-dotenv

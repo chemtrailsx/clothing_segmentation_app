@@ -43,14 +43,6 @@
             max-width: 100%;
             height: auto;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
-            font-size: 18px;
-        }
-        li {
-            margin: 4px 0;
-        }
     </style>
 </head>
 <body>
@@ -62,17 +54,6 @@
     </form>
 
     {% if segmented_image %}
-        <h2>🔍 Segmentation Result</h2>
-
-        {% if present_labels %}
-            <h3>🧾 Detected Clothing Items</h3>
-            <ul>
-                {% for label in present_labels %}
-                    <li>👕 {{ label | capitalize }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
         <div class="results">
             <div>
                 <p><strong>Original Image</strong></p>
@@ -83,6 +64,16 @@
                 <img src="{{ segmented_image }}" width="300">
             </div>
         </div>
+
+        {% if highlighted_images %}
+            <div class="results" style="margin-top: 40px;">
+                {% for _, path in highlighted_images %}
+                    <div>
+                        <img src="{{ path }}" alt="Item" width="200">
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     {% endif %}
 </body>
 </html>

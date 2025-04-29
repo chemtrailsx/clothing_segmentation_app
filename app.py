@@ -25,30 +25,16 @@ colors = np.array([
 
 # Clothing class labels
 id2label = {
-    0: "background",
-    1: "hat",
-    2: "hair",
-    3: "sunglasses",
-    4: "upper-clothes",
-    5: "dress",
-    6: "coat",
-    7: "socks",
-    8: "pants",
-    9: "jumpsuits",
-    10: "scarf",
-    11: "skirt",
-    12: "face",
-    13: "left-arm",
-    14: "right-arm",
-    15: "left-leg",
-    16: "right-leg",
-    17: "left-shoe",
-    18: "right-shoe"
+    0: "background", 1: "hat", 2: "hair", 3: "sunglasses", 4: "upper-clothes",
+    5: "dress", 6: "coat", 7: "socks", 8: "pants", 9: "jumpsuits", 10: "scarf",
+    11: "skirt", 12: "face", 13: "left-arm", 14: "right-arm",
+    15: "left-leg", 16: "right-leg", 17: "left-shoe", 18: "right-shoe"
 }
 
 # Set of labels to keep (main clothing items only)
 clothing_labels = {
-    "upper-clothes", "dress", "coat", "socks", "pants", "jumpsuits", "scarf", "skirt", "hat", "left-shoe", "right-shoe"
+    "upper-clothes", "dress", "coat", "socks", "pants", "jumpsuits",
+    "scarf", "skirt", "hat", "left-shoe", "right-shoe"
 }
 
 @app.route("/", methods=["GET", "POST"])
@@ -90,13 +76,42 @@ def index():
         plt.savefig(output_path, bbox_inches="tight")
         plt.close()
 
+        # Clean up old item images
+        for file in os.listdir("static"):
+            if file.startswith("item_") and file.endswith(".png"):
+                os.remove(os.path.join("static", file))
+
+        # Save individual clothing items from real image with transparency
+        unique_ids = np.unique(pred_seg)
+        present_labels = [label for label in unique_ids if id2label[label] in clothing_labels]
+
+        image_np = np.array(image)
+        highlighted_image_paths = []
+
+        for label_id in present_labels:
+            label_name = id2label[label_id]
+            mask = (pred_seg == label_id)
+
+            # Create RGBA image from original with transparency
+            masked_image = np.zeros((image_np.shape[0], image_np.shape[1], 4), dtype=np.uint8)
+            masked_image[..., :3] = image_np
+            masked_image[..., 3] = np.where(mask, 255, 0)  # Alpha channel
+
+            item_image = Image.fromarray(masked_image, mode="RGBA")
+            single_item_path = os.path.join("static", f"item_{label_id}.png")
+            item_image.save(single_item_path)
+
+            highlighted_image_paths.append((label_name, single_item_path))
+
         return render_template(
             "index.html",
             segmented_image=output_path,
-            image_url=image_url
+            image_url=image_url,
+            highlighted_images=highlighted_image_paths
         )
 
     return render_template("index.html")
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True) 

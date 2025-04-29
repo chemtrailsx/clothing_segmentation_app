@@ -6,5 +6,7 @@ env/
 venv/
 *.env
 .DS_Store
-output.png
 static/output.png
+static/gen_*.png
+static/top_output.png
+static/bottom_output.png
